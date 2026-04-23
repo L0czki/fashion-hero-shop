@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 
 export interface PremiumStatus {
   activatedAt: string;  // ISO date
@@ -39,13 +39,11 @@ function persist(user: User | null) {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isPremiumActive, setIsPremiumActive] = useState(false);
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setUser(JSON.parse(stored));
       }
     } catch {
@@ -53,12 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsPremiumActive(user?.premium ? new Date(user.premium.expiresAt).getTime() > Date.now() : false);
-  }, [user]);
-
-  const login = useCallback(async (email: string) => {
+  const login = useCallback(async (email: string, _password: string) => {
     const newUser: User = {
       email,
       firstName: email.split("@")[0],
@@ -111,6 +104,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return next;
     });
   }, []);
+
+  const isPremiumActive = useMemo(() => {
+    if (!user?.premium) return false;
+    return new Date(user.premium.expiresAt).getTime() > Date.now();
+  }, [user]);
 
   return (
     <AuthContext.Provider
