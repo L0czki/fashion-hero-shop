@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { CloseIcon } from "./icons";
+import { Crown } from "lucide-react";
 
 type MenuKey = "MEN" | "WOMEN" | "SALE";
 
@@ -156,6 +157,12 @@ export function MegaMenuNav() {
         >
           NEW
         </Link>
+        <Link
+          href="/collections/premium-early-access"
+          className="flex items-center gap-1 text-[12px] font-medium uppercase tracking-[0.5px] text-charcoal hover:opacity-60 transition-opacity"
+        >
+          <Crown className="h-3 w-3" /> PREMIUM EARLY ACCESS
+        </Link>
       </div>
 
       {/* Desktop mega menu panel */}
@@ -291,6 +298,13 @@ export function MobileMegaMenuContent({ onLinkClick }: { onLinkClick: () => void
         onClick={onLinkClick}
       >
         NEW
+      </Link>
+      <Link
+        href="/collections/premium-early-access"
+        className="flex items-center gap-2 text-nav py-2"
+        onClick={onLinkClick}
+      >
+        <Crown className="h-3.5 w-3.5" /> PREMIUM EARLY ACCESS
       </Link>
     </div>
   );
