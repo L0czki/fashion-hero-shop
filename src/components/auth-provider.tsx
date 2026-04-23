@@ -2,30 +2,50 @@
 
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 
+export interface PremiumStatus {
+  activatedAt: string;  // ISO date
+  expiresAt: string;    // ISO date — activatedAt + 365 days
+}
+
 interface User {
   email: string;
   firstName: string;
   lastName: string;
+  premium?: PremiumStatus;
 }
 
 interface AuthContextValue {
   user: User | null;
+  isPremiumActive: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (data: { email: string; password: string; firstName: string; lastName: string }) => Promise<void>;
   logout: () => void;
+  activatePremium: () => void;
+  cancelPremium: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 const STORAGE_KEY = "stepforward_user";
+const PREMIUM_DURATION_DAYS = 365;
+
+function persist(user: User | null) {
+  if (user) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+  } else {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [isPremiumActive, setIsPremiumActive] = useState(false);
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setUser(JSON.parse(stored));
       }
     } catch {
@@ -33,14 +53,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const login = useCallback(async (email: string, _password: string) => {
-    // Mock login — always succeeds
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsPremiumActive(user?.premium ? new Date(user.premium.expiresAt).getTime() > Date.now() : false);
+  }, [user]);
+
+  const login = useCallback(async (email: string) => {
     const newUser: User = {
       email,
       firstName: email.split("@")[0],
       lastName: "",
     };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
+    persist(newUser);
     setUser(newUser);
   }, []);
 
@@ -50,17 +74,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       firstName: data.firstName,
       lastName: data.lastName,
     };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
+    persist(newUser);
     setUser(newUser);
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
+    persist(null);
     setUser(null);
   }, []);
 
+  const activatePremium = useCallback(() => {
+    setUser((current) => {
+      if (!current) return current;
+      const now = new Date();
+      const expires = new Date(now);
+      expires.setDate(expires.getDate() + PREMIUM_DURATION_DAYS);
+      const next: User = {
+        ...current,
+        premium: {
+          activatedAt: now.toISOString(),
+          expiresAt: expires.toISOString(),
+        },
+      };
+      persist(next);
+      return next;
+    });
+  }, []);
+
+  const cancelPremium = useCallback(() => {
+    setUser((current) => {
+      if (!current) return current;
+      const { premium: _removed, ...rest } = current;
+      void _removed;
+      const next: User = rest;
+      persist(next);
+      return next;
+    });
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, isPremiumActive, login, register, logout, activatePremium, cancelPremium }}
+    >
       {children}
     </AuthContext.Provider>
   );
