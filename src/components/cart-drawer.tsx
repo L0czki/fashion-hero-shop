@@ -5,6 +5,8 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { CloseIcon, MinusIcon, PlusIcon } from "./icons";
 import type { CartItem } from "@/types";
+import { FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
+import { useAuth } from "./auth-provider";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -21,12 +23,12 @@ export function CartDrawer({
   onUpdateQuantity,
   onRemove,
 }: CartDrawerProps) {
+  const { isPremiumActive } = useAuth();
   const subtotal = items.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
     0
   );
-  const freeShippingThreshold = 299;
-  const remaining = Math.max(0, freeShippingThreshold - subtotal);
+  const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
 
   return (
     <>
@@ -54,16 +56,43 @@ export function CartDrawer({
           </button>
         </div>
 
-        {/* Shipping bar */}
-        <div className="px-4 py-3 bg-cream-light text-center">
-          {remaining > 0 ? (
-            <p className="text-xs text-warm-gray">
-              Spend {remaining.toFixed(0)} zl more to earn free shipping!
-            </p>
+        {/* Shipping bar — three states */}
+        <div className="px-4 py-3 bg-cream-light">
+          {isPremiumActive ? (
+            <div className="text-center">
+              <p className="text-xs font-medium text-charcoal">
+                ✓ Premium: darmowa dostawa odblokowana
+              </p>
+              <p className="text-[11px] text-warm-gray mt-0.5">
+                Dostawa next-day przy zamówieniu do 14:00
+              </p>
+            </div>
+          ) : remaining > 0 ? (
+            <div className="text-center">
+              <p className="text-xs text-warm-gray">
+                Dodaj jeszcze <span className="text-charcoal font-medium">{remaining.toFixed(0)} zł</span> do darmowej dostawy
+              </p>
+              <Link
+                href="/premium"
+                onClick={onClose}
+                className="text-[11px] text-warm-gray underline hover:text-charcoal transition-colors mt-0.5 inline-block"
+              >
+                Albo kup Premium za 59 zł/rok — zawsze 0 zł dostawy →
+              </Link>
+            </div>
           ) : (
-            <p className="text-xs text-warm-gray">
-              You&apos;ve earned free shipping!
-            </p>
+            <div className="text-center">
+              <p className="text-xs text-charcoal font-medium">
+                Masz darmową dostawę w tym zamówieniu ✓
+              </p>
+              <Link
+                href="/premium"
+                onClick={onClose}
+                className="text-[11px] text-warm-gray underline hover:text-charcoal transition-colors mt-0.5 inline-block"
+              >
+                Z Premium masz ją zawsze + next-day →
+              </Link>
+            </div>
           )}
         </div>
 
