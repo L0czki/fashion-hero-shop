@@ -216,6 +216,7 @@ export const products: Product[] = [
     reviewCount: 84,
     tags: ["street-style", "cushioned", "bold", "lightweight"],
     sellerId: "s1",
+    premiumEarlyAccess: true,
     colors: [
       { name: "Triple Black", hex: "#0a0a0a", image: "/images/products/product-1.jpg" },
       { name: "Off White", hex: "#f5f0eb", image: "/images/products/product-9.jpg" },
@@ -344,6 +345,7 @@ export const products: Product[] = [
     reviewCount: 28,
     tags: ["streetwear", "utility", "windproof", "layering"],
     sellerId: "s1",
+    premiumEarlyAccess: true,
     colors: [
       { name: "Black", hex: "#1a1a1a", image: "/images/products/product-22.jpg" },
       { name: "Army Green", hex: "#4a5a3a", image: "/images/products/product-23.jpg" },
@@ -3304,6 +3306,7 @@ export const products: Product[] = [
     reviewCount: 156,
     tags: ["everyday", "spacious", "sustainable", "lightweight"],
     sellerId: "s11",
+    premiumEarlyAccess: true,
     colors: [
       { name: "Natural", hex: "#c4b59a", image: "/images/products/product-28.jpg" },
       { name: "Black", hex: "#1a1a1a", image: "/images/products/product-29.jpg" },
@@ -3481,6 +3484,10 @@ export function getProductsByCollection(collectionSlug: string): Product[] {
 
   if (collectionSlug === "all") {
     return products;
+  }
+
+  if (collectionSlug === "premium-early-access") {
+    return products.filter((p) => p.premiumEarlyAccess);
   }
 
   const productCat = categoryMap[collectionSlug];

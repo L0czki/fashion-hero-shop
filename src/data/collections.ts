@@ -67,6 +67,13 @@ export const collections: Collection[] = [
     description: "Browse everything on FashionHero - shoes, apparel, and accessories from thousands of sellers.",
     heroImage: "/images/hero/collection-hero-2.jpg",
   },
+  {
+    id: "premium-early-access",
+    name: "Premium Early Access",
+    slug: "premium-early-access",
+    description: "Ekskluzywne produkty dostępne 48h wcześniej tylko dla Premium.",
+    heroImage: "/images/hero/collection-hero-1.jpg",
+  },
 ];
 
 export function getCollection(slug: string): Collection | undefined {
