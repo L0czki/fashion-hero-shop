@@ -19,15 +19,16 @@ function formatDuration(ms: number): string {
 }
 
 export function PriorityDeliveryCountdown({ active, className }: Props) {
-  const [now, setNow] = useState<Date>(() => new Date());
+  const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
     if (!active) return;
+    setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(id);
   }, [active]);
 
-  if (!active) return null;
+  if (!active || !now) return null;
 
   const info = getNextDeliveryDate(now);
   const dateLabel = formatDeliveryDate(info.deliveryDate);
