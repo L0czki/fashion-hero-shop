@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCart } from "@/components/cart-provider";
 import { useAuth } from "@/components/auth-provider";
 import { getShippingCost, FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
+import { PriorityDeliveryCountdown } from "@/components/priority-delivery-countdown";
 
 export default function CheckoutPage() {
   const { items } = useCart();
@@ -191,13 +192,22 @@ export default function CheckoutPage() {
                     )}
                   </span>
                 </div>
-                {!isPremiumActive && subtotal < FREE_SHIPPING_THRESHOLD && (
+                {isPremiumActive ? (
+                  <PriorityDeliveryCountdown active={isPremiumActive} className="pt-1" />
+                ) : subtotal < FREE_SHIPPING_THRESHOLD ? (
                   <Link
                     href="/premium"
                     className="block text-[11px] text-warm-gray hover:text-charcoal underline"
                   >
                     Premium = 0 zł dostawy + next-day za 59 zł/rok →
                   </Link>
+                ) : (
+                  <p className="text-[11px] text-warm-gray">
+                    Dostawa 2–4 dni robocze ·{" "}
+                    <Link href="/premium" className="underline hover:text-charcoal">
+                      Next-day z Premium →
+                    </Link>
+                  </p>
                 )}
                 <div className="flex justify-between text-sm pt-3 border-t border-cream-dark mt-3">
                   <span className="font-medium text-charcoal">Total</span>

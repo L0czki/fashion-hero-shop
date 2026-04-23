@@ -9,6 +9,9 @@ import { SizeSelector } from "@/components/size-selector";
 import { useCart } from "@/components/cart-provider";
 import { WishlistButton } from "@/components/wishlist-button";
 import { getSellerById } from "@/data/sellers";
+import { useAuth } from "./auth-provider";
+import { FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
+import { PriorityDeliveryCountdown } from "./priority-delivery-countdown";
 
 interface ProductInfoProps {
   product: Product;
@@ -45,24 +48,14 @@ function getStockInfo(productId: string): { inStock: boolean; lowStock: boolean;
   };
 }
 
-function getEstimatedDelivery(): string {
-  const now = new Date();
-  const minDays = 5;
-  const maxDays = 7;
-  const startDate = new Date(now.getTime() + minDays * 86400000);
-  const endDate = new Date(now.getTime() + maxDays * 86400000);
-  const fmt = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
-  return `${fmt.format(startDate)} - ${fmt.format(endDate)}`;
-}
-
 export function ProductInfo({ product }: ProductInfoProps) {
   const [selectedColor, setSelectedColor] = useState<ProductColor>(product.colors[0]);
   const [selectedSize, setSelectedSize] = useState<number | null>(null);
   const { addItem } = useCart();
+  const { isPremiumActive } = useAuth();
 
   const stock = useMemo(() => getStockInfo(product.id), [product.id]);
   const seller = getSellerById(product.sellerId);
-  const deliveryDate = useMemo(() => getEstimatedDelivery(), []);
 
   const collectionName = product.category === "men"
     ? "Men's Shoes"
@@ -174,15 +167,27 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
       {/* Shipping info */}
       <div className="flex flex-col gap-2 pt-2 border-t border-border">
-        <p className="text-xs text-warm-gray">
-          Free Shipping on Orders over 299 zl
-        </p>
-        <p className="text-xs text-warm-gray">
-          Estimated delivery: {deliveryDate}
-        </p>
-        <p className="text-xs text-warm-gray">
-          Easy Returns
-        </p>
+        {isPremiumActive ? (
+          <>
+            <p className="text-xs text-charcoal font-medium">
+              ✓ Premium: darmowa dostawa
+            </p>
+            <PriorityDeliveryCountdown active className="" />
+          </>
+        ) : (
+          <>
+            <p className="text-xs text-warm-gray">
+              Darmowa dostawa od {FREE_SHIPPING_THRESHOLD} zł
+            </p>
+            <p className="text-xs text-warm-gray">
+              Dostawa 2–4 dni robocze ·{" "}
+              <Link href="/premium" className="underline hover:text-charcoal">
+                Next-day z Premium →
+              </Link>
+            </p>
+          </>
+        )}
+        <p className="text-xs text-warm-gray">Łatwe zwroty</p>
       </div>
     </div>
   );
