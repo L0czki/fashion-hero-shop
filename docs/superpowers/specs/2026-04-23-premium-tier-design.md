@@ -21,7 +21,7 @@ Introduce a paid "Premium" tier as a presentable prototype. A logged-in user can
 | Non-premium free-shipping threshold | **99 zł** (changed from current 299 zł) |
 | Standard shipping cost (non-premium, below threshold) | 19.90 zł (unchanged) |
 | Activation | Single click → premium instantly active for 365 days |
-| Cancellation | Available in account and on /premium page (so demo can toggle states) |
+| Cancellation | Available on /premium page (active-state banner) so demo can toggle states |
 | Gating | Only logged-in users can activate; guest CTA → `/account/login?redirect=/premium` |
 
 ## 3. Data model and shared state
@@ -175,7 +175,7 @@ Tag **3 products** with `premiumEarlyAccess: true`, chosen for visual variety (e
 
 Slug `premium-early-access` handled inside the existing `src/app/collections/[slug]/page.tsx`. Reuses `CollectionView`/`CollectionHero`/`FilterSidebar`.
 
-- Hero uses the same dark palette as `/premium` for visual consistency with a "Premium Early Access" badge above the title and the tagline "48h wcześniej niż reszta".
+- Hero uses the same dark palette as `/premium` for visual consistency with a "Premium Early Access" badge above the title and the tagline "48h wcześniej niż reszta". (The "48h" promise is marketing copy only — the prototype has no time-based unlock logic; products stay premium-gated until someone removes the flag.)
 - Grid shows the three tagged products.
 
 ### 6.3 State-dependent behavior
