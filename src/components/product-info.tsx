@@ -12,6 +12,8 @@ import { getSellerById } from "@/data/sellers";
 import { useAuth } from "./auth-provider";
 import { FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
 import { PriorityDeliveryCountdown } from "./priority-delivery-countdown";
+import { PremiumLockModal } from "./premium-lock-modal";
+import { PremiumBadge } from "./premium-badge";
 
 interface ProductInfoProps {
   product: Product;
@@ -53,6 +55,8 @@ export function ProductInfo({ product }: ProductInfoProps) {
   const [selectedSize, setSelectedSize] = useState<number | null>(null);
   const { addItem } = useCart();
   const { isPremiumActive } = useAuth();
+  const [lockModalOpen, setLockModalOpen] = useState(false);
+  const isEarlyAccessLocked = !!product.premiumEarlyAccess && !isPremiumActive;
 
   const stock = useMemo(() => getStockInfo(product.id), [product.id]);
   const seller = getSellerById(product.sellerId);
@@ -91,6 +95,9 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
       {/* Product name + wishlist */}
       <div>
+        {product.premiumEarlyAccess && (
+          <PremiumBadge size="sm" label="Early Access" className="mb-2" />
+        )}
         <div className="flex items-start justify-between gap-3">
           <h1 className="text-2xl md:text-3xl font-normal text-charcoal mb-2">
             {product.name}
@@ -158,11 +165,21 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
       {/* Add to cart — prominent dark button */}
       <button
-        onClick={handleAddToCart}
-        disabled={!selectedSize}
+        onClick={() => {
+          if (isEarlyAccessLocked) {
+            setLockModalOpen(true);
+            return;
+          }
+          handleAddToCart();
+        }}
+        disabled={!selectedSize && !isEarlyAccessLocked}
         className="w-full py-4 bg-charcoal text-white text-[12px] font-medium uppercase tracking-[0.6px] rounded-full hover:bg-charcoal-light transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        {selectedSize ? "ADD TO CART - " + product.price + " zl" : "SELECT A SIZE"}
+        {isEarlyAccessLocked
+          ? "ODBLOKUJ Z PREMIUM"
+          : selectedSize
+            ? `ADD TO CART - ${product.price} zł`
+            : "SELECT A SIZE"}
       </button>
 
       {/* Shipping info */}
@@ -189,6 +206,12 @@ export function ProductInfo({ product }: ProductInfoProps) {
         )}
         <p className="text-xs text-warm-gray">Łatwe zwroty</p>
       </div>
+
+      <PremiumLockModal
+        isOpen={lockModalOpen}
+        onClose={() => setLockModalOpen(false)}
+        productName={product.name}
+      />
     </div>
   );
 }
