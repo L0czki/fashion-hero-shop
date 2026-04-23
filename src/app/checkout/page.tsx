@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useCart } from "@/components/cart-provider";
+import { useAuth } from "@/components/auth-provider";
+import { getShippingCost, FREE_SHIPPING_THRESHOLD } from "@/lib/shipping";
 
 export default function CheckoutPage() {
   const { items } = useCart();
@@ -10,7 +12,8 @@ export default function CheckoutPage() {
     (sum, item) => sum + item.product.price * item.quantity,
     0
   );
-  const shipping = subtotal >= 299 ? 0 : 19.9;
+  const { isPremiumActive } = useAuth();
+  const shipping = getShippingCost(subtotal, isPremiumActive);
   const total = subtotal + shipping;
 
   return (
@@ -171,11 +174,31 @@ export default function CheckoutPage() {
                   <span className="font-medium">{subtotal.toFixed(0)} zl</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-warm-gray">Shipping</span>
+                  <span className="text-warm-gray">Dostawa</span>
                   <span className="font-medium">
-                    {shipping === 0 ? "Free" : `${shipping.toFixed(2)} zl`}
+                    {isPremiumActive ? (
+                      <>
+                        <span className="line-through text-warm-gray mr-2">19,90 zł</span>
+                        <span className="text-charcoal">0 zł</span>
+                        <span className="ml-2 text-[10px] font-semibold uppercase tracking-wider bg-charcoal text-white px-1.5 py-0.5 rounded">
+                          Premium
+                        </span>
+                      </>
+                    ) : shipping === 0 ? (
+                      "0 zł"
+                    ) : (
+                      `${shipping.toFixed(2)} zł`
+                    )}
                   </span>
                 </div>
+                {!isPremiumActive && subtotal < FREE_SHIPPING_THRESHOLD && (
+                  <Link
+                    href="/premium"
+                    className="block text-[11px] text-warm-gray hover:text-charcoal underline"
+                  >
+                    Premium = 0 zł dostawy + next-day za 59 zł/rok →
+                  </Link>
+                )}
                 <div className="flex justify-between text-sm pt-3 border-t border-cream-dark mt-3">
                   <span className="font-medium text-charcoal">Total</span>
                   <span className="font-medium text-charcoal text-lg">{total.toFixed(2)} zl</span>
