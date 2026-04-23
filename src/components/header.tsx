@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { SearchIcon, UserIcon, CartIcon, MenuIcon, CloseIcon, HeartIcon } from "./icons";
+import { Crown } from "lucide-react";
 import { SearchModal } from "./search-modal";
 import { MegaMenuNav, MobileMegaMenuContent } from "./mega-menu";
 import { useAuth } from "./auth-provider";
@@ -21,7 +22,7 @@ interface HeaderProps {
 export function Header({ onCartOpen, cartCount = 0, wishlistCount = 0 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, isPremiumActive } = useAuth();
 
   return (
     <header className="bg-white sticky top-0 z-50 border-b border-black/5">
@@ -78,7 +79,7 @@ export function Header({ onCartOpen, cartCount = 0, wishlistCount = 0 }: HeaderP
           <Link
             href={user ? "/account" : "/account/login"}
             aria-label="Account"
-            className="hidden sm:flex p-1 hover:opacity-60 transition-opacity items-center justify-center"
+            className="hidden sm:flex p-1 hover:opacity-60 transition-opacity items-center justify-center gap-1 relative"
           >
             {user ? (
               <span className="w-5 h-5 rounded-full bg-charcoal text-white text-[11px] font-medium flex items-center justify-center">
@@ -86,6 +87,15 @@ export function Header({ onCartOpen, cartCount = 0, wishlistCount = 0 }: HeaderP
               </span>
             ) : (
               <UserIcon />
+            )}
+            {isPremiumActive && (
+              <span
+                title="Premium aktywne"
+                aria-label="Premium"
+                className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-charcoal text-white flex items-center justify-center"
+              >
+                <Crown className="h-2.5 w-2.5" />
+              </span>
             )}
           </Link>
           <button
